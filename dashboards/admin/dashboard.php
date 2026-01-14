@@ -2,6 +2,13 @@
 session_start();
 require_once '../../includes/dbh.php';
 require_once '../../includes/functions.php';
+
+// Fetch numbers dynamically
+$totalStudents = getTotalByRole($conn, 3);
+$totalLecturers = getTotalByRole($conn, 2);
+$totalAdmins = getTotalByRole($conn, 1);
+$totalCourses = getTotalCourses($conn);
+$totalUnits = getTotalUnits($conn);
 ?>
 
 <?php include '../../includes/header.php'; ?>
@@ -18,23 +25,35 @@ require_once '../../includes/functions.php';
     <main class="flex-fill mt-3">
         <div class="container-fluid p-4">
             <div class="row g-4">
-                <!-- Dashboard cards -->
+                <!-- total students -->
                 <div class="col-md-4">
                     <div class="card shadow-sm rounded-3 p-3">
                         <h5>Total Students</h5>
-                        <h2>120</h2>
+                        <h2><?= $totalStudents ?></h2>
                     </div>
                 </div>
+
+                <!-- total lecturers -->
                 <div class="col-md-4">
                     <div class="card shadow-sm rounded-3 p-3">
                         <h5>Total Lecturers</h5>
-                        <h2>15</h2>
+                        <h2><?= $totalLecturers ?></h2>
                     </div>
                 </div>
+
+                <!-- total courses -->
                 <div class="col-md-4">
                     <div class="card shadow-sm rounded-3 p-3">
                         <h5>Total Courses</h5>
-                        <h2>8</h2>
+                        <h2><?= $totalCourses ?></h2>
+                    </div>
+                </div>
+
+                 <!-- Total Units -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm rounded-3 p-3 mt-3">
+                        <h5>Total Units</h5>
+                        <h2><?= $totalUnits ?></h2>
                     </div>
                 </div>
             </div>

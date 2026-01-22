@@ -15,20 +15,24 @@ function getUserByEmail($conn, $email) {
 }
 
 //This function fetches all users with their roles and classes.
-
 function getAllUsers($conn) {
     $sql = "
         SELECT users.user_id, users.name, users.email,
                roles.role_name,
-               classes.class_name
+               classes.class_name,
+               courses.course_code
         FROM users
         JOIN roles ON users.role_id = roles.role_id
         LEFT JOIN classes ON users.class_id = classes.class_id
+        LEFT JOIN courses ON users.course_id = courses.course_id
+        WHERE users.deleted = 0
         ORDER BY users.user_id DESC
     ";
-
     return mysqli_query($conn, $sql);
 }
+
+
+
 
 // Get total number of users
 function getTotalUsers($conn) {

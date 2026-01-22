@@ -15,16 +15,18 @@ require_once '../../includes/functions.php';
 Fetch units with their related course name
 */
 $sql = "
-    SELECT 
-        u.unit_id,
-        u.unit_name,
-        c.course_name
-    FROM units u
-    LEFT JOIN course_unit cu ON u.unit_id = cu.unit_id
-    LEFT JOIN courses c ON cu.course_id = c.course_id
-    ORDER BY u.unit_name
+SELECT u.unit_id, u.unit_name, c.course_name,
+       GROUP_CONCAT(CONCAT(l.name) SEPARATOR ', ') AS lecturers
+FROM units u
+JOIN course_unit cu ON u.unit_id = cu.unit_id
+JOIN courses c ON cu.course_id = c.course_id
+LEFT JOIN unit_lecturers ul ON u.unit_id = ul.unit_id
+LEFT JOIN users l ON ul.lecturer_id = l.user_id
+GROUP BY u.unit_id
+ORDER BY u.unit_id DESC
 ";
 $units = mysqli_query($conn, $sql);
+
 
 // Fetch courses for dropdown
 $courses = mysqli_query($conn, "SELECT course_id, course_name FROM courses ORDER BY course_name");
@@ -51,18 +53,19 @@ $courses = mysqli_query($conn, "SELECT course_id, course_name FROM courses ORDER
                 <table class="table table-striped align-middle">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Unit Name</th>
                             <th>Course</th>
+                            <th>Lecturers</th>
                             <th width="150">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php while ($unit = mysqli_fetch_assoc($units)): ?>
                         <tr>
-                            <td><?= $unit['unit_id']; ?></td>
                             <td><?= htmlspecialchars($unit['unit_name']); ?></td>
                             <td><?= htmlspecialchars($unit['course_name'] ?? '—'); ?></td>
+                            <td><?= htmlspecialchars($unit['lecturers'] ?? '-') ?></td>
+
                             <td>
                                 <button class="btn btn-sm btn-warning">Edit</button>
                                 <button class="btn btn-sm btn-danger">Delete</button>

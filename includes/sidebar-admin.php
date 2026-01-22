@@ -40,6 +40,22 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 </a>
             </li>
 
+            <!-- Class Register -->
+            <li class="nav-item mb-2">
+                <a class="nav-link <?php if($current_page == 'class-register.php') echo 'active'; ?>" href="class-register.php">
+                    <i class="bi bi-diagram-3 me-2"></i> Classes
+                </a>
+            </li>
+
+            <!-- Timetable -->
+            <li class="nav-item mb-2">
+                <a class="nav-link <?php if($current_page == 'timetable.php') echo 'active'; ?>" href="timetable.php">
+                    <i class="bi bi-calendar-week me-2"></i> Timetable
+                </a>
+            </li>
+
+
+
             <!-- Announcements -->
             <li class="nav-item mb-2">
                 <a class="nav-link <?php if($current_page == 'announcements.php') echo 'active'; ?>" href="announcements.php">

@@ -9,17 +9,19 @@ Create Course
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+    $course_code = trim($_POST['course_code']);
     $course_name = trim($_POST['course_name']);
     $description = trim($_POST['description']);
 
-    if (empty($course_name)) {
-        header("Location: courses.php?error=empty");
-        exit;
+    if (empty($course_name) || empty($course_code)) {
+    header("Location: courses.php?error=empty");
+    exit;
     }
 
-    $sql = "INSERT INTO courses (course_name, description) VALUES (?, ?)";
-    $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "ss", $course_name, $description);
+    $sql = "INSERT INTO courses (course_code, course_name, description)
+    VALUES (?, ?, ?)";
+    mysqli_stmt_bind_param($stmt, "sss", $course_code, $course_name, $description);
+
     mysqli_stmt_execute($stmt);
 
     header("Location: courses.php?success=created");

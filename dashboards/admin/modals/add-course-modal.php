@@ -8,8 +8,16 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
+            
             <form action="course-create.php" method="POST">
                 <div class="modal-body">
+                    <div class="mb-3">
+                      <label for="course_code" class="form-label">Course Code</label>
+                        <input type="text" name="course_code" id="course_code"
+                         class="form-control"
+                         placeholder="e.g. BSC-IM"
+                        required>
+                    </div>
                     <div class="mb-3">
                         <label for="course_name" class="form-label">Course Name</label>
                         <input type="text" name="course_name" id="course_name"

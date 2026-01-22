@@ -11,6 +11,7 @@
             <form action="unit-create.php" method="POST">
                 <div class="modal-body">
 
+                
                     <div class="mb-3">
                         <label for="unit_name" class="form-label">Unit Name</label>
                         <input type="text" name="unit_name" id="unit_name"
@@ -28,8 +29,24 @@
                             <?php endwhile; ?>
                         </select>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="lecturers" class="form-label">Assign Lecturer(s)</label>
+                        <select name="lecturers[]" id="lecturers" class="form-select" multiple>
+                            <?php
+                            $lecturers = mysqli_query($conn, "SELECT user_id, name FROM users WHERE role_id = 2 ORDER BY name");
+                            while ($lecturer = mysqli_fetch_assoc($lecturers)):
+                            ?>
+                                <option value="<?= $lecturer['user_id'] ?>">
+                                    <?= htmlspecialchars($lecturer['name']) ?>
+                                </option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
+
                 </div>
 
+                
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Create Unit</button>

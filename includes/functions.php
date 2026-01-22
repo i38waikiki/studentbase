@@ -32,18 +32,40 @@ function getAllUsers($conn) {
 }
 
 
+// Get users by role (used for Users tabs)
+function getUsersByRole($conn, $role_id) {
+    $sql = "
+        SELECT users.user_id, users.name, users.email,
+               roles.role_name,
+               classes.class_name,
+               courses.course_code
+        FROM users
+        JOIN roles ON users.role_id = roles.role_id
+        LEFT JOIN classes ON users.class_id = classes.class_id
+        LEFT JOIN courses ON users.course_id = courses.course_id
+        WHERE users.deleted = 0 AND users.role_id = ?
+        ORDER BY users.user_id DESC
+    ";
+
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $role_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
 
 
 // Get total number of users
 function getTotalUsers($conn) {
-    $sql = "SELECT COUNT(*) as total FROM users";
+    $sql = "SELECT COUNT(*) as total FROM users WHERE deleted = 0";
     $result = mysqli_query($conn, $sql);
     return mysqli_fetch_assoc($result)['total'];
 }
 
+
+
 // Get total users by role
 function getTotalByRole($conn, $role_id) {
-    $sql = "SELECT COUNT(*) as total FROM users WHERE role_id = ?";
+    $sql = "SELECT COUNT(*) as total FROM users WHERE role_id = ? AND deleted = 0";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "i", $role_id);
     mysqli_stmt_execute($stmt);
@@ -51,6 +73,7 @@ function getTotalByRole($conn, $role_id) {
     $row = mysqli_fetch_assoc($res);
     return $row['total'];
 }
+
 
 // Total courses
 function getTotalCourses($conn) {

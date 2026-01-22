@@ -1,9 +1,12 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
     <div class="container-fluid">
-        <!-- Hamburger button: always visible for testing -->
-        <button class="btn btn-light me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarAdmin" aria-controls="sidebarAdmin">
-            <i class="bi bi-list"></i> <!-- three lines icon -->
-        </button>
+    <button class="btn btn-outline-primary d-lg-none"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#sidebarAdmin"
+        aria-controls="sidebarAdmin">
+    <i class="bi bi-list"></i>
+</button>
 
         <!-- Logo -->
         <a class="navbar-brand d-flex align-items-center" href="#">

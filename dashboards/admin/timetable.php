@@ -3,33 +3,14 @@ session_start();
 require_once '../../includes/dbh.php';
 require_once '../../includes/functions.php';
 
-// Fetch data for dropdowns
-$units = mysqli_query($conn, "SELECT * FROM units ORDER BY unit_name");
-$lecturers = mysqli_query($conn, "
-    SELECT user_id, name 
-    FROM users 
-    WHERE role_id = 2
-    ORDER BY name
-");
-$classes = mysqli_query($conn, "
-    SELECT class_id, year, group_name 
-    FROM classes 
-    ORDER BY year, group_name
-");
+/*
+    Timetable (Admin)
+*/
 
-// Existing timetable entries
-$timetable = mysqli_query($conn, "
-    SELECT 
-        timetable.*,
-        units.unit_name,
-        users.name AS lecturer_name,
-        classes.year,
-        classes.group_name
-    FROM timetable
-    JOIN units ON timetable.unit_id = units.unit_id
-    JOIN users ON timetable.lecturer_id = users.user_id
-    JOIN classes ON timetable.class_id = classes.class_id
-    ORDER BY day_of_week, start_time
+$courses = mysqli_query($conn, "
+    SELECT course_id, course_code, course_name
+    FROM courses
+    ORDER BY course_code
 ");
 ?>
 
@@ -37,50 +18,59 @@ $timetable = mysqli_query($conn, "
 <body class="d-flex flex-column min-vh-100">
 
 <?php include '../../includes/navbar-dashboard.php'; ?>
-<?php include '../../includes/sidebar-admin.php'; ?>
 
-<main class="flex-fill">
-<div class="container-fluid p-4">
+<div class="d-flex flex-grow-1">
+    <?php include '../../includes/sidebar-admin.php'; ?>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>Timetable</h3>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTimetableModal">
-            + Add Lesson
-        </button>
-    </div>
+    <main class="flex-fill page-wrap">
+        <div class="container-fluid">
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Day</th>
-                        <th>Time</th>
-                        <th>Unit</th>
-                        <th>Lecturer</th>
-                        <th>Class</th>
-                        <th>Room</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php while ($row = mysqli_fetch_assoc($timetable)): ?>
-                    <tr>
-                        <td><?= $row['day_of_week']; ?></td>
-                        <td><?= substr($row['start_time'],0,5); ?> - <?= substr($row['end_time'],0,5); ?></td>
-                        <td><?= htmlspecialchars($row['unit_name']); ?></td>
-                        <td><?= htmlspecialchars($row['lecturer_name']); ?></td>
-                        <td>Year <?= $row['year']; ?> - <?= $row['group_name']; ?></td>
-                        <td><?= htmlspecialchars($row['room'] ?? '-'); ?></td>
-                    </tr>
+            <div class="mb-4">
+                <h3 class="mb-1">Timetable</h3>
+                <div class="text-muted">Select a course → select a class → assign schedule</div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <label class="form-label">Search course</label>
+                    <input type="text" id="courseSearch" class="form-control" placeholder="Type course code or name...">
+                </div>
+            </div>
+
+            <div class="row g-3" id="courseGrid">
+                <?php while ($c = mysqli_fetch_assoc($courses)): ?>
+                    <div class="col-md-4 course-card"
+                         data-search="<?= strtolower($c['course_code'].' '.$c['course_name']); ?>">
+                        <a class="text-decoration-none text-dark"
+                           href="timetable-classes.php?course_id=<?= $c['course_id']; ?>">
+                            <div class="card p-3 h-100">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="text-muted small mb-1">Course</div>
+                                        <div class="fw-bold fs-5"><?= htmlspecialchars($c['course_code']); ?></div>
+                                        <div class="text-muted"><?= htmlspecialchars($c['course_name']); ?></div>
+                                    </div>
+                                    <i class="bi bi-chevron-right text-muted"></i>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
                 <?php endwhile; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
+            </div>
 
+        </div>
+    </main>
 </div>
-</main>
 
 <?php include '../../includes/footer.php'; ?>
-<?php include 'modals/add-timetable-modal.php'; ?>
+
+<script>
+document.getElementById('courseSearch').addEventListener('input', function(){
+    const q = this.value.toLowerCase().trim();
+    document.querySelectorAll('.course-card').forEach(card => {
+        card.style.display = card.getAttribute('data-search').includes(q) ? '' : 'none';
+    });
+});
+</script>
+
 </body>

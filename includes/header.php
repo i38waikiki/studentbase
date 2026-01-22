@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<link rel="stylesheet" href="/studentbase/assets/style.css">
 <head>
     <meta charset="UTF-8">
     <title>Student Base</title>

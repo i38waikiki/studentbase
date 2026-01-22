@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // Remove links first to avoid FK constraint errors
+    // Remove links first to avoid errors
     $stmt = mysqli_prepare($conn, "DELETE FROM unit_lecturers WHERE unit_id = ?");
     mysqli_stmt_bind_param($stmt, "i", $unit_id);
     mysqli_stmt_execute($stmt);
@@ -22,12 +22,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     mysqli_stmt_execute($stmt);
     mysqli_stmt_close($stmt);
 
-    // Now delete unit
+    //  delete unit
     $stmt = mysqli_prepare($conn, "DELETE FROM units WHERE unit_id = ?");
     mysqli_stmt_bind_param($stmt, "i", $unit_id);
     mysqli_stmt_execute($stmt);
     mysqli_stmt_close($stmt);
 
-    header("Location: units.php?success=deleted");
+    header("Location: units-course.php?course_id=".$course_id."&success=deleted");
     exit();
 }

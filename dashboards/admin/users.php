@@ -92,9 +92,9 @@ $admins    = getUsersByRole($conn, 1);
 
 <?php include '../../includes/footer.php'; ?>
 
-<!-- ===================== -->
+
 <!-- Add User Modal -->
-<!-- ===================== -->
+
 <div class="modal fade" id="addUserModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -156,9 +156,6 @@ $admins    = getUsersByRole($conn, 1);
                             <input type="password" name="password" id="password" class="form-control" required>
                         </div>
 
-                        <!-- NOTE:
-                             In JS we enforce that students must choose course + class.
-                             Backend (user-create.php) should also validate this (safety). -->
 
                     </div>
                 </form>
@@ -173,9 +170,9 @@ $admins    = getUsersByRole($conn, 1);
     </div>
 </div>
 
-<!-- ===================== -->
+
 <!-- Delete User Modal -->
-<!-- ===================== -->
+
 <div class="modal fade" id="deleteUserModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -198,8 +195,22 @@ $admins    = getUsersByRole($conn, 1);
     </div>
 </div>
 
+<!-- User Profile Offcanvas  -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="userProfileCanvas">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">User Profile</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body" id="userProfileContent">
+    <div class="text-center text-muted py-5">
+      Select a user to view profile
+    </div>
+  </div>
+</div>
+
+
 <script>
-/* ===== Delete modal ===== */
+
 var deleteModal = document.getElementById('deleteUserModal');
 var userIdInput = deleteModal.querySelector('#delete_user_id');
 
@@ -227,7 +238,7 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
 </script>
 
 <script>
-/* ===== Student validation (front-end) ===== */
+/* ===== Student validation ===== */
 document.getElementById('addUserForm').addEventListener('submit', function(e) {
     var role = document.getElementById('role_id').value;
     var course = document.getElementById('course_id').value;
@@ -272,5 +283,39 @@ document.getElementById('course_id').addEventListener('change', function () {
         });
 });
 </script>
+
+<script>
+function openUserProfile(userId) {
+    const canvasEl = document.getElementById('userProfileCanvas');
+    const canvas = bootstrap.Offcanvas.getOrCreateInstance(canvasEl);
+    const content = document.getElementById('userProfileContent');
+
+    content.innerHTML = `
+        <div class="text-center text-muted py-5">
+            Loading profile...
+        </div>
+    `;
+
+    fetch('user-profile-fragment.php?id=' + encodeURIComponent(userId))
+        .then(res => res.text())
+        .then(html => {
+            content.innerHTML = html;
+            canvas.show();
+
+            
+            const editBtn = document.getElementById('openEditUserBtn');
+            if (editBtn) {
+                editBtn.addEventListener('click', function () {
+
+                });
+            }
+        })
+        .catch(() => {
+            content.innerHTML = `<div class="alert alert-danger">Failed to load profile.</div>`;
+            canvas.show();
+        });
+}
+</script>
+
 
 </body>

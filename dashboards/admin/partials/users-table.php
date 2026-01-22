@@ -12,7 +12,7 @@
             </thead>
             <tbody>
             <?php while ($user = mysqli_fetch_assoc($users)): ?>
-                <tr style="cursor:pointer;" onclick="window.location='user-profile.php?id=<?= $user['user_id']; ?>'">
+                <tr style="cursor:pointer;" onclick="openUserProfile(<?= (int)$user['user_id']; ?>)">
                     <td><?= htmlspecialchars($user['name']); ?></td>
                     <td><?= htmlspecialchars($user['email']); ?></td>
                     <td>

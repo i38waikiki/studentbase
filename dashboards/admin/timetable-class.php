@@ -3,6 +3,17 @@ session_start();
 require_once '../../includes/dbh.php';
 require_once '../../includes/functions.php';
 
+/*
+    timetable-class.php (Admin)
+    - Shows weekly timetable grid for a selected CLASS
+    - Add Lesson modal:
+        Units are filtered by the CLASS course_id (via course_unit table)
+        Lecturers dropdown auto-filters by selected unit (via unit_lecturers table)
+    - Edit Lesson modal:
+        Click a lesson block to edit
+        Delete uses Bootstrap confirmation modal 
+*/
+
 $class_id = isset($_GET['class_id']) ? (int)$_GET['class_id'] : 0;
 if ($class_id <= 0) {
     header("Location: timetable.php");
@@ -45,12 +56,8 @@ while ($row = mysqli_fetch_assoc($res)) {
 }
 mysqli_stmt_close($stmt);
 
-/* Dropdown data for modals */
-$units = mysqli_query($conn, "SELECT unit_id, unit_name FROM units ORDER BY unit_name");
-$lecturers = mysqli_query($conn, "SELECT user_id, name FROM users WHERE role_id = 2 AND deleted = 0 ORDER BY name");
-
 /* Helpers */
-function timeToMinutes($t){
+function timeToMinutes($t) {
     $parts = explode(':', $t);
     return ((int)$parts[0]) * 60 + (int)$parts[1];
 }
@@ -108,6 +115,7 @@ $gridHeight = ($endDay - $startDay) * $pxPerMin;
                         if ($_GET['error'] === 'class_clash') echo "This class already has a lesson during that time.";
                         else if ($_GET['error'] === 'lecturer_clash') echo "This lecturer is already booked during that time.";
                         else if ($_GET['error'] === 'time') echo "End time must be after start time.";
+                        else if ($_GET['error'] === 'empty') echo "Please fill in all required fields.";
                         else echo "Something went wrong. Please try again.";
                     ?>
                 </div>
@@ -152,7 +160,7 @@ $gridHeight = ($endDay - $startDay) * $pxPerMin;
                                             $height = (timeToMinutes($e['end_time']) - timeToMinutes($e['start_time'])) * $pxPerMin;
 
                                             if ($top < 0) $top = 0;
-                                            if ($height < 30) $height = 30; // minimum block height
+                                            if ($height < 30) $height = 30;
                                         ?>
 
                                         <!-- Clickable Lesson Block -->
@@ -181,8 +189,9 @@ $gridHeight = ($endDay - $startDay) * $pxPerMin;
                                 </div>
                             </div>
                         <?php endforeach; ?>
-
                     </div>
+
+                    
 
                 </div>
             </div>
@@ -211,22 +220,17 @@ $gridHeight = ($endDay - $startDay) * $pxPerMin;
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Unit</label>
-              <select class="form-select" name="unit_id" required>
+              <select class="form-select" name="unit_id" id="add_unit_id" required>
                 <option value="" disabled selected>Select unit</option>
-                <?php while($u = mysqli_fetch_assoc($units)): ?>
-                  <option value="<?= $u['unit_id']; ?>"><?= htmlspecialchars($u['unit_name']); ?></option>
-                <?php endwhile; ?>
               </select>
             </div>
 
             <div class="col-md-6">
               <label class="form-label">Lecturer</label>
-              <select class="form-select" name="lecturer_id" required>
+              <select class="form-select" name="lecturer_id" id="add_lecturer_id" required>
                 <option value="" disabled selected>Select lecturer</option>
-                <?php while($l = mysqli_fetch_assoc($lecturers)): ?>
-                  <option value="<?= $l['user_id']; ?>"><?= htmlspecialchars($l['name']); ?></option>
-                <?php endwhile; ?>
               </select>
+              <div class="form-text">Lecturers are filtered by the selected unit.</div>
             </div>
 
             <div class="col-md-4">
@@ -290,25 +294,15 @@ $gridHeight = ($endDay - $startDay) * $pxPerMin;
             <div class="col-md-6">
               <label class="form-label">Unit</label>
               <select class="form-select" name="unit_id" id="edit_unit_id" required>
-                <?php
-                $units2 = mysqli_query($conn, "SELECT unit_id, unit_name FROM units ORDER BY unit_name");
-                while($u = mysqli_fetch_assoc($units2)):
-                ?>
-                  <option value="<?= $u['unit_id']; ?>"><?= htmlspecialchars($u['unit_name']); ?></option>
-                <?php endwhile; ?>
-              </select>
-            </div>
+                <option value="" disabled selected>Loading units...</option>
+            
 
             <div class="col-md-6">
               <label class="form-label">Lecturer</label>
               <select class="form-select" name="lecturer_id" id="edit_lecturer_id" required>
-                <?php
-                $lecturers2 = mysqli_query($conn, "SELECT user_id, name FROM users WHERE role_id = 2 AND deleted = 0 ORDER BY name");
-                while($l = mysqli_fetch_assoc($lecturers2)):
-                ?>
-                  <option value="<?= $l['user_id']; ?>"><?= htmlspecialchars($l['name']); ?></option>
-                <?php endwhile; ?>
+                <option value="" disabled selected>Select lecturer</option>
               </select>
+              <div class="form-text">Filtered by selected unit.</div>
             </div>
 
             <div class="col-md-4">
@@ -339,20 +333,18 @@ $gridHeight = ($endDay - $startDay) * $pxPerMin;
 
           </div>
 
-        
 
         </div>
 
         <div class="modal-footer d-flex justify-content-between">
           <button type="submit" class="btn btn-primary">Save Changes</button>
 
-         <button type="button"
-                class="btn btn-danger"
-                data-bs-toggle="modal"
-                data-bs-target="#deleteLessonModal">
+          <button type="button"
+                  class="btn btn-danger"
+                  data-bs-toggle="modal"
+                  data-bs-target="#deleteLessonModal">
             Delete Lesson
-        </button>
-
+          </button>
         </div>
 
       </form>
@@ -360,9 +352,9 @@ $gridHeight = ($endDay - $startDay) * $pxPerMin;
   </div>
 </div>
 
-<!-- ================================= -->
+<!-- ===================== -->
 <!-- Delete Lesson Confirmation Modal -->
-<!-- ================================ -->
+<!-- ===================== -->
 <div class="modal fade" id="deleteLessonModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -380,16 +372,12 @@ $gridHeight = ($endDay - $startDay) * $pxPerMin;
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">
-          Cancel
-        </button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
 
         <form action="timetable-delete.php" method="POST">
           <input type="hidden" name="timetable_id" id="delete_timetable_id">
           <input type="hidden" name="class_id" value="<?= (int)$class_id; ?>">
-          <button type="submit" class="btn btn-danger">
-            Delete
-          </button>
+          <button type="submit" class="btn btn-danger">Delete</button>
         </form>
       </div>
 
@@ -397,37 +385,31 @@ $gridHeight = ($endDay - $startDay) * $pxPerMin;
   </div>
 </div>
 
-
 <style>
-/* Simple timetable layout */
 .timetable-grid{
   display: grid;
   grid-template-columns: 90px repeat(5, 1fr);
   gap: 12px;
   align-items: start;
 }
-
 .time-col .time-slot{
   border-top: 1px solid #e9ecef;
   font-size: 12px;
   color: #6c757d;
   padding-top: 6px;
 }
-
 .day-col{
   border: 1px solid #e9ecef;
   border-radius: 10px;
   overflow: hidden;
   background: #fff;
 }
-
 .day-header{
   background: #f8f9fa;
   padding: 10px 12px;
   font-weight: 600;
   border-bottom: 1px solid #e9ecef;
 }
-
 .day-body{
   position: relative;
   background: repeating-linear-gradient(
@@ -437,7 +419,6 @@ $gridHeight = ($endDay - $startDay) * $pxPerMin;
     #f6f7f9 30px
   );
 }
-
 .lesson-block{
   position: absolute;
   left: 10px;
@@ -450,34 +431,130 @@ $gridHeight = ($endDay - $startDay) * $pxPerMin;
   cursor: pointer;
   transition: transform 0.1s ease;
 }
-
-.lesson-block:hover{
-  transform: scale(1.01);
-}
+.lesson-block:hover{ transform: scale(1.01); }
 </style>
 
 <script>
-/* Prefill Edit Lesson Modal */
-document.getElementById('editLessonModal').addEventListener('show.bs.modal', function (event) {
-    const btn = event.relatedTarget;
+const courseId = <?= (int)$class['course_id']; ?>;
 
-    document.getElementById('edit_timetable_id').value = btn.getAttribute('data-id');
-    document.getElementById('edit_unit_id').value = btn.getAttribute('data-unit');
-    document.getElementById('edit_lecturer_id').value = btn.getAttribute('data-lecturer');
-    document.getElementById('edit_day').value = btn.getAttribute('data-day');
-    document.getElementById('edit_start').value = btn.getAttribute('data-start');
-    document.getElementById('edit_end').value = btn.getAttribute('data-end');
-    document.getElementById('edit_room').value = btn.getAttribute('data-room') || '';
+// Add modal elements
+const addLessonModal = document.getElementById('addLessonModal');
+const addUnitSelect = document.getElementById('add_unit_id');
+const addLecturerSelect = document.getElementById('add_lecturer_id');
+
+// Edit modal elements
+const editLessonModal = document.getElementById('editLessonModal');
+const editUnitSelect = document.getElementById('edit_unit_id');
+const editLecturerSelect = document.getElementById('edit_lecturer_id');
+
+function resetSelect(selectEl, placeholder) {
+  selectEl.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+}
+
+function loadUnitsForCourse(targetUnitSelect, preselectUnitId = null) {
+  resetSelect(targetUnitSelect, "Loading units...");
+
+  return fetch('get-units.php?course_id=' + encodeURIComponent(courseId))
+    .then(res => res.json())
+    .then(units => {
+      resetSelect(targetUnitSelect, "Select unit");
+
+      if (!units.length) {
+        targetUnitSelect.innerHTML = `<option value="" disabled selected>No units found for this course</option>`;
+        return [];
+      }
+
+      units.forEach(u => {
+        targetUnitSelect.innerHTML += `<option value="${u.unit_id}">${u.unit_name}</option>`;
+      });
+
+      if (preselectUnitId) {
+        targetUnitSelect.value = preselectUnitId;
+      }
+      return units;
+    })
+    .catch(() => {
+      resetSelect(targetUnitSelect, "Error loading units");
+      return [];
+    });
+}
+
+function loadLecturersForUnit(unitId, targetLecturerSelect, preselectLecturerId = null) {
+  resetSelect(targetLecturerSelect, "Loading lecturers...");
+
+  return fetch('get-unit-lecturers.php?unit_id=' + encodeURIComponent(unitId))
+    .then(res => res.json())
+    .then(lecturers => {
+      resetSelect(targetLecturerSelect, "Select lecturer");
+
+      if (!lecturers.length) {
+        targetLecturerSelect.innerHTML = `<option value="" disabled selected>No lecturers assigned</option>`;
+        return [];
+      }
+
+      lecturers.forEach(l => {
+        targetLecturerSelect.innerHTML += `<option value="${l.user_id}">${l.name}</option>`;
+      });
+
+      if (preselectLecturerId) {
+        targetLecturerSelect.value = preselectLecturerId;
+      }
+      return lecturers;
+    })
+    .catch(() => {
+      resetSelect(targetLecturerSelect, "Error loading lecturers");
+      return [];
+    });
+}
+
+/* ADD LESSON FLOW */
+addLessonModal.addEventListener('show.bs.modal', function () {
+  resetSelect(addLecturerSelect, "Select lecturer");
+
+  loadUnitsForCourse(addUnitSelect).then(() => {
+    // nothing else; user picks unit and then lecturers load
+  });
 });
-</script>
 
-<script>
-/* Pass timetable_id into delete modal */
+addUnitSelect.addEventListener('change', function () {
+  if (!this.value) return;
+  loadLecturersForUnit(this.value, addLecturerSelect);
+});
+
+/* EDIT LESSON FLOW */
+editLessonModal.addEventListener('show.bs.modal', function (event) {
+  const btn = event.relatedTarget;
+
+  const timetableId = btn.getAttribute('data-id');
+  const unitId = btn.getAttribute('data-unit');
+  const lecturerId = btn.getAttribute('data-lecturer');
+  const day = btn.getAttribute('data-day');
+  const start = btn.getAttribute('data-start');
+  const end = btn.getAttribute('data-end');
+  const room = btn.getAttribute('data-room') || '';
+
+  document.getElementById('edit_timetable_id').value = timetableId;
+  document.getElementById('edit_day').value = day;
+  document.getElementById('edit_start').value = start;
+  document.getElementById('edit_end').value = end;
+  document.getElementById('edit_room').value = room;
+
+  // Load units filtered by course, preselect unit, then load lecturers for that unit and preselect lecturer
+  loadUnitsForCourse(editUnitSelect, unitId).then(() => {
+    loadLecturersForUnit(unitId, editLecturerSelect, lecturerId);
+  });
+});
+
+editUnitSelect.addEventListener('change', function () {
+  if (!this.value) return;
+  loadLecturersForUnit(this.value, editLecturerSelect);
+});
+
+/* DELETE MODAL: pass timetable_id */
 document.getElementById('deleteLessonModal').addEventListener('show.bs.modal', function () {
-    const timetableId = document.getElementById('edit_timetable_id').value;
-    document.getElementById('delete_timetable_id').value = timetableId;
+  const timetableId = document.getElementById('edit_timetable_id').value;
+  document.getElementById('delete_timetable_id').value = timetableId;
 });
 </script>
-
 
 </body>

@@ -47,6 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_close($stmt);
     }
 
-    header("Location: units.php?success=updated");
+    header("Location: units-course.php?course_id=".$course_id."&success=updated");
     exit();
 }

@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-    header("Location: units.php?success=created");
+    header("Location: units-course.php?course_id=".$course_id."&success=created");
     exit;
 
     

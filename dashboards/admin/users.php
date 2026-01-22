@@ -7,10 +7,7 @@ $students  = getUsersByRole($conn, 3);
 $lecturers = getUsersByRole($conn, 2);
 $admins    = getUsersByRole($conn, 1);
 
-/*
-    Admin - Users page
-    Shows users table + add user modal + soft delete modal
-*/
+
 ?>
 
 <?php include '../../includes/header.php'; ?>
@@ -195,6 +192,80 @@ $admins    = getUsersByRole($conn, 1);
     </div>
 </div>
 
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Edit User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form action="user-update.php" method="POST" id="editUserForm">
+        <div class="modal-body">
+          <input type="hidden" name="user_id" id="edit_user_id">
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Full Name</label>
+              <input type="text" class="form-control" name="name" id="edit_name" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" name="email" id="edit_email" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Role</label>
+              <select class="form-select" name="role_id" id="edit_role_id" required>
+                <option value="1">Admin</option>
+                <option value="2">Lecturer</option>
+                <option value="3">Student</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Course</label>
+              <select class="form-select" name="course_id" id="edit_course_id">
+                <option value="">Select course</option>
+                <?php
+                $courses2 = mysqli_query($conn, "SELECT course_id, course_code FROM courses ORDER BY course_name");
+                while ($c = mysqli_fetch_assoc($courses2)):
+                ?>
+                  <option value="<?= (int)$c['course_id']; ?>"><?= htmlspecialchars($c['course_code']); ?></option>
+                <?php endwhile; ?>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Class</label>
+              <select class="form-select" name="class_id" id="edit_class_id">
+                <option value="">Select class</option>
+              </select>
+              <div class="form-text">Classes load after choosing a course.</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Password (leave blank to keep)</label>
+              <input type="password" class="form-control" name="password">
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Save Changes</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
 <!-- User Profile Offcanvas  -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="userProfileCanvas">
   <div class="offcanvas-header">
@@ -315,6 +386,80 @@ function openUserProfile(userId) {
             canvas.show();
         });
 }
+</script>
+<script>
+const profileContent = document.getElementById('userProfileContent');
+
+/* Helper: load classes for course */
+function loadClassesForCourse(courseId, selectedClassId = null) {
+    const classSelect = document.getElementById('edit_class_id');
+    classSelect.innerHTML = '<option value="">Loading...</option>';
+
+    if (!courseId) {
+        classSelect.innerHTML = '<option value="">Select class</option>';
+        return;
+    }
+
+    fetch('get-classes.php?course_id=' + encodeURIComponent(courseId))
+        .then(res => res.json())
+        .then(data => {
+            classSelect.innerHTML = '<option value="">Select class</option>';
+            data.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.class_id;
+                opt.textContent = `Year ${c.year} - Group ${c.group_name}`;
+                if (selectedClassId && parseInt(selectedClassId) === parseInt(c.class_id)) {
+                    opt.selected = true;
+                }
+                classSelect.appendChild(opt);
+            });
+        })
+        .catch(() => {
+            classSelect.innerHTML = '<option value="">Error loading classes</option>';
+        });
+}
+
+/* Click handlers inside offcanvas */
+profileContent.addEventListener('click', function(e) {
+
+    // EDIT
+    const editBtn = e.target.closest('.js-edit-user');
+    if (editBtn) {
+        const userId = editBtn.getAttribute('data-userid');
+
+        fetch('user-get.php?id=' + encodeURIComponent(userId))
+            .then(res => res.json())
+            .then(data => {
+                if (!data.ok) {
+                    alert(data.error || 'Could not load user');
+                    return;
+                }
+
+                const u = data.user;
+
+                document.getElementById('edit_user_id').value = u.user_id;
+                document.getElementById('edit_name').value = u.name;
+                document.getElementById('edit_email').value = u.email;
+                document.getElementById('edit_role_id').value = u.role_id;
+
+                document.getElementById('edit_course_id').value = u.course_id ?? '';
+                loadClassesForCourse(u.course_id, u.class_id);
+
+                const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editUserModal'));
+                modal.show();
+            })
+            .catch(() => alert('Error loading user'));
+    }
+
+
+});
+
+/* When course changes in edit modal -> reload classes */
+document.getElementById('edit_course_id').addEventListener('change', function () {
+    loadClassesForCourse(this.value);
+});
+
+
 </script>
 
 

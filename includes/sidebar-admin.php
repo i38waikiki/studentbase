@@ -46,12 +46,6 @@ ob_start();
             </a>
         </li>
 
-        <li class="nav-item mb-1">
-            <a class="nav-link <?php if($current_page == 'announcements.php') echo 'active'; ?>" href="announcements.php">
-                <i class="bi bi-bell me-2"></i> Announcements
-            </a>
-        </li>
-
         <hr class="my-2">
 
         <li class="nav-item">
@@ -65,9 +59,9 @@ ob_start();
 $menuHtml = ob_get_clean();
 ?>
 
-<!-- ===================== -->
+
 <!-- Desktop sidebar  -->
-<!-- ===================== -->
+
 <aside class="admin-sidebar d-none d-lg-block bg-light border-end flex-shrink-0">
     <div class="sidebar-inner">
         <div class="px-3 py-3 border-bottom">
@@ -79,9 +73,8 @@ $menuHtml = ob_get_clean();
     </div>
 </aside>
 
-<!-- ===================== -->
 <!-- Mobile offcanvas  -->
-<!-- ===================== -->
+
 <div class="offcanvas offcanvas-start d-lg-none bg-light text-dark"
      tabindex="-1"
      id="sidebarAdminMobile"

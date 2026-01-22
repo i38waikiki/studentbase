@@ -28,12 +28,11 @@
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
-                        <li><a class="dropdown-item" href="#">Assignment due</a></li>
                         <li><a class="dropdown-item" href="#">New announcement</a></li>
                     </ul>
                 </li>
 
-                <!-- User Dropdown -->
+               
                 <!-- User dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">

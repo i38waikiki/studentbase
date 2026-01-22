@@ -88,12 +88,12 @@ $courseText = ($user['course_name'])
 
 <div class="d-grid gap-2">
    
-    <button class="btn btn-warning" id="openEditUserBtn" data-userid="<?= (int)$user['user_id']; ?>">
-        <i class="bi bi-pencil-square me-1"></i> Edit User
-    </button>
+   <div class="d-grid gap-2">
+    <button class="btn btn-warning js-edit-user" type="button" data-userid="<?= (int)$user['user_id']; ?>">
+     <i class="bi bi-pencil-square me-1"></i> Edit User
+</button>
 
-   
-    <button class="btn btn-outline-danger" type="button" disabled>
-        <i class="bi bi-slash-circle me-1"></i> Deactivate
-    </button>
+
+</div>
+
 </div>

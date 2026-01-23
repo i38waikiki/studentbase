@@ -1,6 +1,9 @@
 <?php
-session_start();
+require_once '../../includes/auth.php';
+requireRole(1); 
+
 require_once '../../includes/dbh.php';
+
 
 /*
     Update timetable lesson with clash checking.

@@ -1,7 +1,10 @@
 <?php
-session_start();
+require_once '../../includes/auth.php';
+requireRole(1); 
+
 require_once '../../includes/dbh.php';
 require_once '../../includes/functions.php';
+
 
 $sql = "SELECT * FROM courses ORDER BY course_name";
 $courses = mysqli_query($conn, $sql);

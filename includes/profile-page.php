@@ -46,6 +46,19 @@ $courseText = $user['course_name']
 $classText = ($user['year'] && $user['group_name'])
     ? "Year " . (int)$user['year'] . " - Group " . htmlspecialchars($user['group_name'])
     : "-";
+
+
+    $activity = mysqli_prepare($conn, "
+    SELECT login_time, ip_address
+    FROM login_history
+    WHERE user_id = ?
+    ORDER BY login_time DESC
+    LIMIT 5
+");
+mysqli_stmt_bind_param($activity, "i", $user_id);
+mysqli_stmt_execute($activity);
+$activityResult = mysqli_stmt_get_result($activity);
+
 ?>
 
 <div class="container-fluid p-4">
@@ -207,15 +220,55 @@ $classText = ($user['year'] && $user['group_name'])
 
             
             <div class="card shadow-sm mt-4">
-                <div class="card-body">
-                    <div class="fw-semibold mb-1">Recent Activity</div>
-                    <div class="text-muted small">
-                        This section can later show login history / last password update.
-                    </div>
-                </div>
-            </div>
+            <div class="card-body">
+                <div class="fw-semibold mb-2">Recent Activity</div>
 
+                <?php if (mysqli_num_rows($activityResult) === 0): ?>
+                    <div class="text-muted small">No recent activity.</div>
+                <?php else: ?>
+                    <ul class="list-group list-group-flush">
+                        <?php while ($row = mysqli_fetch_assoc($activityResult)): ?>
+                            <li class="list-group-item px-0">
+                                <div class="small">
+                                    <strong>Logged in</strong>
+                                    <span class="text-muted">
+                                        on <?= date('d M Y, H:i', strtotime($row['login_time'])); ?>
+                                    </span>
+                                </div>
+                                <div class="text-muted small">
+                                    IP: <?= htmlspecialchars($row['ip_address']); ?>
+                                </div>
+                            </li>
+                        <?php endwhile; ?>
+                    </ul>
+                <?php endif; ?>
+            </div>
+        </div>
         </div>
 
     </div>
 </div>
+
+<?php if (isset($_GET['success'])): ?>
+    <div class="alert alert-success">
+        <?php
+            if ($_GET['success'] === 'account_updated') echo "Account details updated successfully.";
+            if ($_GET['success'] === 'password_updated') echo "Password updated successfully.";
+        ?>
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['error'])): ?>
+    <div class="alert alert-danger">
+        <?php
+            if ($_GET['error'] === 'empty') echo "Please fill in all required fields.";
+            if ($_GET['error'] === 'bademail') echo "Please enter a valid email address.";
+            if ($_GET['error'] === 'emailtaken') echo "That email is already in use.";
+            if ($_GET['error'] === 'empty_password') echo "Please enter a new password.";
+            if ($_GET['error'] === 'nomatch') echo "Passwords do not match.";
+            if ($_GET['error'] === 'weak') echo "Password must be at least 8 characters.";
+            if ($_GET['error'] === 'invalid') echo "Invalid request.";
+        ?>
+    </div>
+<?php endif; ?>
+

@@ -1,8 +1,9 @@
 <?php
-session_start();
+require_once '../../includes/auth.php';
+requireRole(1); 
+
 require_once '../../includes/dbh.php';
 require_once '../../includes/functions.php';
-
 $course_id = isset($_GET['course_id']) ? (int)$_GET['course_id'] : 0;
 if ($course_id <= 0) {
     header("Location: units.php");

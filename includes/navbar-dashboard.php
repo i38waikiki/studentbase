@@ -41,7 +41,10 @@
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="profile.php">Profile Settings</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="../../public/home.php">Logout</a></li>
+                        <li><a class="dropdown-item text-danger" href="/studentbase/public/logout.php">
+                                 <i class="bi bi-box-arrow-right me-1"></i> Logout
+                            </a>
+                        </li>
                     </ul>
                 </li>
 

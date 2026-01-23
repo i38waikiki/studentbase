@@ -1,7 +1,10 @@
 <?php
-session_start();
+require_once '../../includes/auth.php';
+requireRole(1); // or 2 / 3 depending on role
+
 require_once '../../includes/dbh.php';
 require_once '../../includes/functions.php';
+
 
 $class_id = isset($_GET['class_id']) ? (int)$_GET['class_id'] : 0;
 if ($class_id <= 0) {

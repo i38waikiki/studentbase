@@ -32,3 +32,19 @@ mysqli_stmt_close($stmt);
 
 header("Location: assignments.php?success=created");
 exit();
+
+// NOTE: notify all students in the course linked to this unit
+$msg = "New assignment posted: $title";
+$stmtN = mysqli_prepare($conn, "
+  INSERT INTO notifications (user_id, message, is_read, created_at)
+  SELECT u.user_id, ?, 0, NOW()
+  FROM users u
+  WHERE u.role_id = 3
+    AND u.course_id = (
+      SELECT cu.course_id FROM course_unit cu WHERE cu.unit_id = ? LIMIT 1
+    )
+    AND u.deleted = 0
+");
+mysqli_stmt_bind_param($stmtN, "si", $msg, $unit_id);
+mysqli_stmt_execute($stmtN);
+mysqli_stmt_close($stmtN);

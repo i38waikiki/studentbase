@@ -57,3 +57,16 @@ for ($i = 0; $i < $count; $i++) {
 
 header("Location: assignments.php?success=submitted");
 exit();
+
+$msg = "New submission received for assignment #" . $assignment_id;
+
+$stmtN = mysqli_prepare($conn, "
+  INSERT INTO notifications (user_id, message, is_read, created_at)
+  SELECT ul.lecturer_id, ?, 0, NOW()
+  FROM assignments a
+  JOIN unit_lecturers ul ON a.unit_id = ul.unit_id
+  WHERE a.assignment_id = ?
+");
+mysqli_stmt_bind_param($stmtN, "si", $msg, $assignment_id);
+mysqli_stmt_execute($stmtN);
+mysqli_stmt_close($stmtN);

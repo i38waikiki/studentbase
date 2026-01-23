@@ -47,3 +47,15 @@ if ($row) {
 
 header("Location: submissions.php?success=saved");
 exit();
+
+$msg = "Your submission has been graded.";
+$stmtN = mysqli_prepare($conn, "
+  INSERT INTO notifications (user_id, message, is_read, created_at)
+  SELECT s.student_id, ?, 0, NOW()
+  FROM submissions s
+  WHERE s.submission_id = ?
+  LIMIT 1
+");
+mysqli_stmt_bind_param($stmtN, "si", $msg, $submission_id);
+mysqli_stmt_execute($stmtN);
+mysqli_stmt_close($stmtN);

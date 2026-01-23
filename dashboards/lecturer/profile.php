@@ -9,7 +9,7 @@ include '../../includes/header.php';
 <?php include '../../includes/navbar-dashboard.php'; ?>
 
 <div class="d-flex flex-grow-1">
-    <?php include '../../includes/sidebar-admin.php'; ?>
+    <?php include '../../includes/sidebar-lecturer.php'; ?>
 
     <main class="flex-fill page-wrap">
         <?php include '../../includes/profile-page.php'; ?>

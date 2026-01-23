@@ -48,17 +48,17 @@ ob_start();
 
         <hr class="my-2">
 
-        <li class="nav-item">
-            <a class="nav-link <?php if($current_page == 'profile.php') echo 'active'; ?>" href="profile.php">
+        <li class="nav-item mb-1">
+            <a class="nav-link <?php if($current_page == 'profile.php') echo 'active'; ?>"  href="profile.php">
                 <i class="bi bi-person me-2"></i> Profile / Settings
             </a>
         </li>
+
 
     </ul>
 <?php
 $menuHtml = ob_get_clean();
 ?>
-
 
 <!-- Desktop sidebar  -->
 

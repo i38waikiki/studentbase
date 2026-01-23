@@ -47,10 +47,13 @@ $assignments = studentGetAssignments($conn, $student_id);
                     <?php endif; ?>
                   </td>
                   <td>
-                    <form action="submission-upload.php" method="POST" enctype="multipart/form-data" class="d-flex gap-2">
+                    <form action="submission-create.php" method="POST" enctype="multipart/form-data" class="d-flex gap-2">
                       <input type="hidden" name="assignment_id" value="<?= (int)$a['assignment_id']; ?>">
-                      <input type="file" name="file" class="form-control form-control-sm" required>
-                      <button class="btn btn-sm btn-primary">Upload</button>
+
+                      <label class="form-label">Upload file(s)</label>
+                      <input type="file" name="files[]" class="form-control" multiple required>
+
+                         <button class="btn btn-primary mt-3">Submit</button>
                     </form>
                   </td>
                 </tr>

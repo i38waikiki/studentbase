@@ -7,6 +7,7 @@ require_once '../../includes/functions.php';
 
 $student_id = (int)$_SESSION['user_id'];
 $units = studentGetMyUnits($conn, $student_id);
+
 ?>
 <?php include '../../includes/header.php'; ?>
 <body class="d-flex flex-column min-vh-100">
@@ -27,11 +28,23 @@ $units = studentGetMyUnits($conn, $student_id);
               <div class="card-body">
                 <div class="fw-semibold"><?= htmlspecialchars($u['unit_name']); ?></div>
               </div>
-              <div class="card-footer bg-white border-0">
-                <a class="btn btn-outline-primary btn-sm" href="assignments.php">
-                  View Assignments
-                </a>
-              </div>
+           <div class="card-footer bg-white border-0 d-grid gap-2">
+                  <a class="btn btn-outline-primary btn-sm" href="assignments.php?unit_id=<?= (int)$u['unit_id']; ?>">
+                    View Assignments
+                  </a>
+
+                  <?php if (!empty($u['file_path'])): ?>
+                    <a class="btn btn-outline-secondary btn-sm"
+                       href="../../<?= htmlspecialchars($u['file_path']); ?>"
+                       target="_blank">
+                      View Unit Brief
+                    </a>
+                  <?php else: ?>
+                    <div class="text-muted small text-center">
+                      No brief uploaded yet
+                    </div>
+                  <?php endif; ?>
+                </div>
             </div>
           </div>
         <?php endwhile; ?>
@@ -43,6 +56,7 @@ $units = studentGetMyUnits($conn, $student_id);
         <?php endif; ?>
       </div>
     </div>
+
   </main>
 </div>
 

@@ -36,12 +36,20 @@ $units = lecturerGetMyUnits($conn, $lecturer_id);
               <a class="btn btn-outline-primary btn-sm" href="unit-view.php?unit_id=<?= (int)$u['unit_id']; ?>">
                 View Courses
               </a>
-                    
+
               <a class="btn btn-outline-secondary btn-sm" href="assignments.php?unit_id=<?= (int)$u['unit_id']; ?>">
                 View Assignments
               </a>
             </div>
 
+            <form action="unit-brief-upload.php" method="POST" enctype="multipart/form-data" class="mt-2">
+              <input type="hidden" name="unit_id" value="<?= (int)$u['unit_id']; ?>">
+
+              <input type="file" name="brief" class="form-control form-control-sm" required>
+              <button class="btn btn-outline-secondary btn-sm mt-2 w-100" type="submit">
+                Upload / Replace Brief
+              </button>
+            </form>
             </div>
           </div>
         <?php endwhile; ?>

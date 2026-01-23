@@ -91,21 +91,28 @@ function getTotalUnits($conn) {
 
 /* ===== Student ===== */
 
-function studentGetMyUnits(mysqli $conn, int $student_id) {
-    // Student units are units linked to the student’s course_id
+function studentGetMyUnits($conn, $student_id) {
+
     $sql = "
-      SELECT u.unit_id, u.unit_name
-      FROM users s
-      JOIN course_unit cu ON cu.course_id = s.course_id
-      JOIN units u ON u.unit_id = cu.unit_id
-      WHERE s.user_id = ?
-      ORDER BY u.unit_name
+        SELECT DISTINCT
+            u.unit_id,
+            u.unit_name,
+            ub.file_path
+        FROM users s
+        JOIN classes cl ON s.class_id = cl.class_id
+        JOIN course_unit cu ON cl.course_id = cu.course_id
+        JOIN units u ON cu.unit_id = u.unit_id
+        LEFT JOIN unit_briefs ub ON ub.unit_id = u.unit_id
+        WHERE s.user_id = ?
+        ORDER BY u.unit_name
     ";
+
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "i", $student_id);
     mysqli_stmt_execute($stmt);
     return mysqli_stmt_get_result($stmt);
 }
+
 
 function studentGetAssignments(mysqli $conn, int $student_id) {
     $sql = "

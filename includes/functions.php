@@ -89,5 +89,167 @@ function getTotalUnits($conn) {
     return mysqli_fetch_assoc($result)['total'];
 }
 
+<?php
+/*
+  EDU FUNCTIONS (separate file)
+
+  Notes (for lecturer):
+  - All “Student/Lecturer” data queries are here to keep pages clean.
+  - Uses mysqli + prepared statements.
+*/
+
+/* ===== Student ===== */
+
+function studentGetMyUnits(mysqli $conn, int $student_id) {
+    // Student units are units linked to the student’s course_id
+    $sql = "
+      SELECT u.unit_id, u.unit_name
+      FROM users s
+      JOIN course_unit cu ON cu.course_id = s.course_id
+      JOIN units u ON u.unit_id = cu.unit_id
+      WHERE s.user_id = ?
+      ORDER BY u.unit_name
+    ";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $student_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
+
+function studentGetAssignments(mysqli $conn, int $student_id) {
+    $sql = "
+      SELECT a.*, u.unit_name
+      FROM users s
+      JOIN course_unit cu ON cu.course_id = s.course_id
+      JOIN units u ON u.unit_id = cu.unit_id
+      JOIN assignments a ON a.unit_id = u.unit_id
+      WHERE s.user_id = ?
+      ORDER BY a.due_date ASC
+    ";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $student_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
+
+function studentHasSubmitted(mysqli $conn, int $assignment_id, int $student_id) {
+    $sql = "SELECT submission_id FROM submissions WHERE assignment_id=? AND student_id=? LIMIT 1";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "ii", $assignment_id, $student_id);
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    return mysqli_fetch_assoc($res); // returns row or null
+}
+
+function studentGetGrades(mysqli $conn, int $student_id) {
+    $sql = "
+      SELECT g.grade, g.feedback, g.lecturer_id,
+             a.title, a.due_date,
+             u.unit_name,
+             sub.submission_date
+      FROM submissions sub
+      JOIN assignments a ON sub.assignment_id = a.assignment_id
+      JOIN units u ON a.unit_id = u.unit_id
+      LEFT JOIN grades g ON g.submission_id = sub.submission_id
+      WHERE sub.student_id = ?
+      ORDER BY sub.submission_date DESC
+    ";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $student_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
+
+function studentGetTimetable(mysqli $conn, int $student_id) {
+    $sql = "
+      SELECT t.*, u.unit_name, lec.name AS lecturer_name, c.year, c.group_name
+      FROM users s
+      JOIN classes c ON s.class_id = c.class_id
+      JOIN timetable t ON t.class_id = c.class_id
+      JOIN units u ON t.unit_id = u.unit_id
+      JOIN users lec ON t.lecturer_id = lec.user_id
+      WHERE s.user_id = ?
+      ORDER BY FIELD(t.day_of_week,'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'),
+               t.start_time
+    ";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $student_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
+
+/* ===== Lecturer ===== */
+
+function lecturerGetMyUnits(mysqli $conn, int $lecturer_id) {
+    $sql = "
+      SELECT u.unit_id, u.unit_name,
+             GROUP_CONCAT(DISTINCT c.course_code ORDER BY c.course_code SEPARATOR ', ') AS courses
+      FROM unit_lecturers ul
+      JOIN units u ON ul.unit_id = u.unit_id
+      LEFT JOIN course_unit cu ON cu.unit_id = u.unit_id
+      LEFT JOIN courses c ON c.course_id = cu.course_id
+      WHERE ul.lecturer_id = ?
+      GROUP BY u.unit_id
+      ORDER BY u.unit_name
+    ";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $lecturer_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
+
+function lecturerGetAssignments(mysqli $conn, int $lecturer_id) {
+    // Assignments for lecturer’s units
+    $sql = "
+      SELECT a.*, u.unit_name
+      FROM unit_lecturers ul
+      JOIN assignments a ON a.unit_id = ul.unit_id
+      JOIN units u ON u.unit_id = a.unit_id
+      WHERE ul.lecturer_id = ?
+      ORDER BY a.due_date DESC
+    ";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $lecturer_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
+
+function lecturerGetSubmissions(mysqli $conn, int $lecturer_id) {
+    $sql = "
+      SELECT sub.submission_id, sub.submission_date, sub.file_url,
+             a.title, a.assignment_id,
+             u.unit_name,
+             stu.user_id AS student_id, stu.name AS student_name, stu.email AS student_email,
+             g.grade, g.feedback
+      FROM unit_lecturers ul
+      JOIN assignments a ON a.unit_id = ul.unit_id
+      JOIN units u ON u.unit_id = a.unit_id
+      JOIN submissions sub ON sub.assignment_id = a.assignment_id
+      JOIN users stu ON stu.user_id = sub.student_id
+      LEFT JOIN grades g ON g.submission_id = sub.submission_id
+      WHERE ul.lecturer_id = ?
+      ORDER BY sub.submission_date DESC
+    ";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $lecturer_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
+
+function lecturerGetTimetable(mysqli $conn, int $lecturer_id) {
+    $sql = "
+      SELECT t.*, u.unit_name, c.year, c.group_name
+      FROM timetable t
+      JOIN units u ON t.unit_id = u.unit_id
+      JOIN classes c ON t.class_id = c.class_id
+      WHERE t.lecturer_id = ?
+      ORDER BY FIELD(t.day_of_week,'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'),
+               t.start_time
+    ";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $lecturer_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
 
 

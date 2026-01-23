@@ -16,7 +16,7 @@ $admins    = getUsersByRole($conn, 1);
 
 <?php include '../../includes/navbar-dashboard.php'; ?>
 
-<!-- Shell: Sidebar + Content -->
+<!-- Sidebar + Content -->
 <div class="d-flex flex-grow-1">
 
     <?php include '../../includes/sidebar-admin.php'; ?>

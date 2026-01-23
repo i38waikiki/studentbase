@@ -1,84 +1,115 @@
 <?php
 session_start();
-require_once '../includes/dbh.php';       // include database connection
-require_once '../includes/functions.php'; // include functions
 
-$error = ""; // will hold login error message
+/*
+  - This page is UI only. The actual login processing is handled in login-handler.php
+  - Error messages are shown using query string: ?error=...
+*/
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-
-    // Use function to get user
-    $user = getUserByEmail($conn, $email);
-
-    if ($user) {
-        // Check password (later we hash passwords)
-        if ($password === $user['password']) {
-            // Store session variables
-            $_SESSION['user_id'] = $user['user_id'];
-            $_SESSION['role_id'] = $user['role_id'];
-
-            // Role-based redirect
-            if ($user['role_id'] == 1) {
-                header("Location: ../dashboards/admin/dashboard.php");
-            } elseif ($user['role_id'] == 2) {
-                header("Location: ../dashboards/lecturer/dashboard.php");
-            } else {
-                header("Location: ../dashboards/student/dashboard.php");
-            }
-            exit;
-        }
+function loginErrorMessage($code) {
+    switch ($code) {
+        case 'empty': return "Please fill in both email and password.";
+        case 'stmtfailed': return "Something went wrong. Please try again.";
+        case 'wrongpassword': return "Incorrect password.";
+        case 'nouser': return "No account found with that email.";
+        case 'invalidrole': return "Your account role is not valid.";
+        default: return "";
     }
+}
 
-    $error = "Invalid email or password";
+$errorMsg = "";
+if (isset($_GET['error'])) {
+    $errorMsg = loginErrorMessage($_GET['error']);
 }
 ?>
 
 <?php include '../includes/header.php'; ?>
-<?php include '../includes/navbar.php'; ?>
 
-<!-- Login Card -->
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="card shadow-sm rounded-3" style="width: 100%; max-width: 420px;">
-        <div class="card-body p-4">
+<body class="auth-shell">
 
-            <!-- Logo -->
-            <div class="text-center mb-3">
-                <img src="/assets/logo.png" width="50" alt="School Logo">
+  <div class="container-fluid">
+    <div class="row g-0 min-vh-100">
+
+      <!-- LEFT: Login -->
+      <div class="col-lg-5 auth-left">
+
+        <div class="auth-card">
+
+          <!-- Brand -->
+          <div class="auth-brand">
+            <!-- NOTE: Use your real logo path -->
+            <img src="/studentbase/assets/logoB.png" alt="Logo">
+            <div class="fw-semibold">Student Base</div>
+          </div>
+
+          <div class="auth-title">Sign in</div>
+          <div class="auth-sub">
+            Use your school email to access your dashboard.
+          </div>
+
+          <?php if (!empty($errorMsg)): ?>
+            <div class="alert alert-danger py-2">
+              <?= htmlspecialchars($errorMsg); ?>
+            </div>
+          <?php endif; ?>
+
+          <!-- Login Form -->
+          <form method="POST" action="login-handler.php" class="mt-3">
+
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input
+                type="email"
+                name="email"
+                class="form-control"
+                placeholder="name@example.com"
+                required
+                autocomplete="email"
+              >
             </div>
 
-            <h4 class="text-center mb-4">Login</h4>
-
-            <!-- Error Message -->
-            <?php if ($error): ?>
-                <div class="alert alert-danger"><?= $error ?></div>
-            <?php endif; ?>
-
-            <!-- Login Form -->
-            <form method="POST" action="login-handler.php">
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
-                </div>
-
-                <div class="d-grid">
-                    <button class="btn btn-primary">Login</button>
-                </div>
-            </form>
-
-            <div class="text-center mt-3">
-                <a href="forgot-password.php" class="text-decoration-none">Forgot your password?</a>
+            <div class="mb-2">
+              <label class="form-label">Password</label>
+              <input
+                type="password"
+                name="password"
+                class="form-control"
+                placeholder="••••••••"
+                required
+                autocomplete="current-password"
+              >
             </div>
+
+            <div class="d-flex justify-content-end mb-3">
+              <a href="forgot-password.php" class="text-decoration-none small">
+                Forgot password?
+              </a>
+            </div>
+
+            <button class="btn btn-primary w-100 py-2 fw-semibold">
+              Sign in
+            </button>
+
+          </form>
+
+          
+          <div class="text-muted small mt-4">
+            Having trouble? Contact your administrator.
+          </div>
 
         </div>
+      </div>
+
+      <!-- RIGHT: Hero panel -->
+      <div class="col-lg-7 auth-right">
+        <div class="auth-hero">
+          <img src="/studentbase/assets/login-hero.png" alt="Dashboard preview">
+        </div>
+      </div>
+
     </div>
-</div>
+  </div>
 
 <?php include '../includes/footer.php'; ?>
-
+</body>
+</html>

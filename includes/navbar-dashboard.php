@@ -8,7 +8,7 @@
     <i class="bi bi-list"></i>
 </button>
 
-        <!-- Logo -->
+        
         <a class="navbar-brand d-flex align-items-center" href="#">
             <img src="../../assets/logoW.png" alt="Logo" width="35" class="me-2">
             <strong>Student Base</strong>
@@ -135,4 +135,3 @@ notifList.addEventListener('click', function(e) {
 fetchNotifs();
 setInterval(fetchNotifs, 10000);
 </script>
-

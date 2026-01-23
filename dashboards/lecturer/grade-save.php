@@ -46,7 +46,6 @@ if ($row) {
 }
 
 header("Location: submissions.php?success=saved");
-exit();
 
 $msg = "Your submission has been graded.";
 $stmtN = mysqli_prepare($conn, "
@@ -59,3 +58,5 @@ $stmtN = mysqli_prepare($conn, "
 mysqli_stmt_bind_param($stmtN, "si", $msg, $submission_id);
 mysqli_stmt_execute($stmtN);
 mysqli_stmt_close($stmtN);
+exit();
+

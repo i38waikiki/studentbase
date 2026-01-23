@@ -31,20 +31,40 @@ mysqli_stmt_execute($stmt);
 mysqli_stmt_close($stmt);
 
 header("Location: assignments.php?success=created");
+
+// =============================
+// NOTIFICATIONS: students in the SAME COURSE as this unit
+// =============================
+
+// NOTE FOR LECTURER:
+// We notify all students enrolled in the course that this unit belongs to.
+// This uses course_unit to find the course_id for the unit.
+
+$msg = "New assignment posted: " . $title;
+
+// Find the course_id for this unit
+$stmtC = mysqli_prepare($conn, "SELECT course_id FROM course_unit WHERE unit_id = ? LIMIT 1");
+mysqli_stmt_bind_param($stmtC, "i", $unit_id);
+mysqli_stmt_execute($stmtC);
+$resC = mysqli_stmt_get_result($stmtC);
+$rowC = mysqli_fetch_assoc($resC);
+mysqli_stmt_close($stmtC);
+
+if ($rowC) {
+    $course_id = (int)$rowC['course_id'];
+
+    // Insert notifications for all students in that course
+    $stmtN = mysqli_prepare($conn, "
+        INSERT INTO notifications (user_id, message, is_read, created_at)
+        SELECT user_id, ?, 0, NOW()
+        FROM users
+        WHERE role_id = 3
+          AND course_id = ?
+          AND deleted = 0
+    ");
+    mysqli_stmt_bind_param($stmtN, "si", $msg, $course_id);
+    mysqli_stmt_execute($stmtN);
+    mysqli_stmt_close($stmtN);
+}
 exit();
 
-// NOTE: notify all students in the course linked to this unit
-$msg = "New assignment posted: $title";
-$stmtN = mysqli_prepare($conn, "
-  INSERT INTO notifications (user_id, message, is_read, created_at)
-  SELECT u.user_id, ?, 0, NOW()
-  FROM users u
-  WHERE u.role_id = 3
-    AND u.course_id = (
-      SELECT cu.course_id FROM course_unit cu WHERE cu.unit_id = ? LIMIT 1
-    )
-    AND u.deleted = 0
-");
-mysqli_stmt_bind_param($stmtN, "si", $msg, $unit_id);
-mysqli_stmt_execute($stmtN);
-mysqli_stmt_close($stmtN);

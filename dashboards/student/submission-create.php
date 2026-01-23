@@ -56,7 +56,6 @@ for ($i = 0; $i < $count; $i++) {
 }
 
 header("Location: assignments.php?success=submitted");
-exit();
 
 $msg = "New submission received for assignment #" . $assignment_id;
 
@@ -70,3 +69,5 @@ $stmtN = mysqli_prepare($conn, "
 mysqli_stmt_bind_param($stmtN, "si", $msg, $assignment_id);
 mysqli_stmt_execute($stmtN);
 mysqli_stmt_close($stmtN);
+exit();
+

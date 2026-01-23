@@ -65,7 +65,7 @@ $menuHtml = ob_get_clean();
 <aside class="admin-sidebar d-none d-lg-block bg-light border-end flex-shrink-0">
     <div class="sidebar-inner">
         <div class="px-3 py-3 border-bottom">
-            <div class="fw-bold">Studen Base</div>
+            <div class="fw-bold">Student Base</div>
             <small class="text-muted">Admin Panel</small>
         </div>
 

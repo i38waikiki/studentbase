@@ -89,15 +89,6 @@ function getTotalUnits($conn) {
     return mysqli_fetch_assoc($result)['total'];
 }
 
-<?php
-/*
-  EDU FUNCTIONS (separate file)
-
-  Notes (for lecturer):
-  - All “Student/Lecturer” data queries are here to keep pages clean.
-  - Uses mysqli + prepared statements.
-*/
-
 /* ===== Student ===== */
 
 function studentGetMyUnits(mysqli $conn, int $student_id) {
@@ -182,14 +173,10 @@ function studentGetTimetable(mysqli $conn, int $student_id) {
 
 function lecturerGetMyUnits(mysqli $conn, int $lecturer_id) {
     $sql = "
-      SELECT u.unit_id, u.unit_name,
-             GROUP_CONCAT(DISTINCT c.course_code ORDER BY c.course_code SEPARATOR ', ') AS courses
+      SELECT DISTINCT u.unit_id, u.unit_name
       FROM unit_lecturers ul
       JOIN units u ON ul.unit_id = u.unit_id
-      LEFT JOIN course_unit cu ON cu.unit_id = u.unit_id
-      LEFT JOIN courses c ON c.course_id = cu.course_id
       WHERE ul.lecturer_id = ?
-      GROUP BY u.unit_id
       ORDER BY u.unit_name
     ";
     $stmt = mysqli_prepare($conn, $sql);
@@ -197,6 +184,7 @@ function lecturerGetMyUnits(mysqli $conn, int $lecturer_id) {
     mysqli_stmt_execute($stmt);
     return mysqli_stmt_get_result($stmt);
 }
+
 
 function lecturerGetAssignments(mysqli $conn, int $lecturer_id) {
     // Assignments for lecturer’s units

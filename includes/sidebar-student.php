@@ -27,7 +27,7 @@
             </li>
 
             <li class="nav-item mb-2">
-                <a class="nav-link <?php if($current_page=='submissions.php') echo 'active'; ?>" href="submissions.php">
+                <a class="nav-link <?php if($current_page=='grades.php') echo 'active'; ?>" href="grades.php">
                     <i class="bi bi-check2-square me-2"></i> Grade
                 </a>
             </li>

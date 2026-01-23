@@ -209,27 +209,34 @@ function lecturerGetAssignments(mysqli $conn, int $lecturer_id) {
     return mysqli_stmt_get_result($stmt);
 }
 
-function lecturerGetSubmissions(mysqli $conn, int $lecturer_id) {
+function lecturerGetSubmissions($conn, $lecturer_id) {
+
     $sql = "
-      SELECT sub.submission_id, sub.submission_date, sub.file_url,
-             a.title, a.assignment_id,
-             u.unit_name,
-             stu.user_id AS student_id, stu.name AS student_name, stu.email AS student_email,
-             g.grade, g.feedback
-      FROM unit_lecturers ul
-      JOIN assignments a ON a.unit_id = ul.unit_id
-      JOIN units u ON u.unit_id = a.unit_id
-      JOIN submissions sub ON sub.assignment_id = a.assignment_id
-      JOIN users stu ON stu.user_id = sub.student_id
-      LEFT JOIN grades g ON g.submission_id = sub.submission_id
-      WHERE ul.lecturer_id = ?
-      ORDER BY sub.submission_date DESC
+        SELECT
+            s.submission_id,
+            s.submission_date,
+            u.unit_name,
+            a.title,
+            stu.name AS student_name,
+            stu.email AS student_email,
+            g.grade,
+            g.feedback
+        FROM submissions s
+        JOIN assignments a ON s.assignment_id = a.assignment_id
+        JOIN units u ON a.unit_id = u.unit_id
+        JOIN unit_lecturers ul ON ul.unit_id = u.unit_id
+        JOIN users stu ON s.student_id = stu.user_id
+        LEFT JOIN grades g ON g.submission_id = s.submission_id
+        WHERE ul.lecturer_id = ?
+        ORDER BY s.submission_date DESC
     ";
+
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "i", $lecturer_id);
     mysqli_stmt_execute($stmt);
     return mysqli_stmt_get_result($stmt);
 }
+
 
 function lecturerGetTimetable(mysqli $conn, int $lecturer_id) {
     $sql = "

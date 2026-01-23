@@ -388,6 +388,7 @@ function openUserProfile(userId) {
         });
 }
 </script>
+
 <script>
 const profileContent = document.getElementById('userProfileContent');
 

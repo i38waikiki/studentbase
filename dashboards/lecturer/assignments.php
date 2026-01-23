@@ -39,20 +39,43 @@ $units = lecturerGetMyUnits($conn, $lecturer_id);
                 <th>Title</th>
                 <th>Unit</th>
                 <th>Due</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <?php while($a = mysqli_fetch_assoc($assignments)): ?>
-                <tr>
-                  <td class="fw-semibold"><?= htmlspecialchars($a['title']); ?></td>
-                  <td><?= htmlspecialchars($a['unit_name']); ?></td>
-                  <td><?= htmlspecialchars($a['due_date']); ?></td>
-                </tr>
-              <?php endwhile; ?>
-              <?php if (mysqli_num_rows($assignments) === 0): ?>
-                <tr><td colspan="3" class="text-muted text-center py-4">No assignments yet</td></tr>
-              <?php endif; ?>
-            </tbody>
+                <?php while($a = mysqli_fetch_assoc($assignments)): ?>
+                    <tr>
+                        <td class="fw-semibold"><?= htmlspecialchars($a['title']); ?></td>
+                        <td><?= htmlspecialchars($a['unit_name']); ?></td>
+                        <td><?= htmlspecialchars($a['due_date']); ?></td>
+                        <td class="text-end">
+                            <button type="button"
+                             class="btn btn-sm btn-warning"
+                             data-bs-toggle="modal"
+                             data-bs-target="#editAssignmentModal"
+                             data-id="<?= (int)$a['assignment_id']; ?>"
+                             data-unit="<?= (int)$a['unit_id']; ?>"
+                             data-title="<?= htmlspecialchars($a['title'], ENT_QUOTES); ?>"
+                             data-desc="<?= htmlspecialchars($a['description'], ENT_QUOTES); ?>"
+                             data-due="<?= htmlspecialchars($a['due_date'], ENT_QUOTES); ?>">
+                             Edit
+                            </button>
+                                
+                            <button type="button"
+                             class="btn btn-sm btn-danger"
+                             data-bs-toggle="modal"
+                             data-bs-target="#deleteAssignmentModal"
+                             data-id="<?= (int)$a['assignment_id']; ?>">
+                             Delete
+                            </button>
+                         </td>
+                    </tr>
+                    <?php endwhile; ?>
+                    <?php if (mysqli_num_rows($assignments) === 0): ?>
+                        <tr><td colspan="3" class="text-muted text-center py-4">No assignments yet</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                    
           </table>
         </div>
       </div>
@@ -62,6 +85,94 @@ $units = lecturerGetMyUnits($conn, $lecturer_id);
 </div>
 
 <?php include '../../includes/footer.php'; ?>
+
+<!-- Edit Assignment Modal -->
+<div class="modal fade" id="editAssignmentModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Assignment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form action="assignment-update.php" method="POST">
+        <div class="modal-body">
+          <input type="hidden" name="assignment_id" id="edit_assignment_id">
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Unit</label>
+              <select class="form-select" name="unit_id" id="edit_unit_id" required>
+               
+                <?php
+                  mysqli_data_seek($units, 0);
+                  while($u = mysqli_fetch_assoc($units)):
+                ?>
+                  <option value="<?= (int)$u['unit_id']; ?>">
+                    <?= htmlspecialchars($u['unit_name']); ?>
+                  </option>
+                <?php endwhile; ?>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Due date</label>
+              <input type="date" class="form-control" name="due_date" id="edit_due_date" required>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Title</label>
+              <input type="text" class="form-control" name="title" id="edit_title" required>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" name="description" id="edit_description" rows="4"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Save Changes</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Delete Assignment Modal -->
+<div class="modal fade" id="deleteAssignmentModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">Delete Assignment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-0">
+          Are you sure you want to delete this assignment?<br>
+          <strong>This cannot be undone.</strong>
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+
+        <form action="assignment-delete.php" method="POST">
+          <input type="hidden" name="assignment_id" id="delete_assignment_id">
+          <button class="btn btn-danger" type="submit">Delete</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
 <!-- Add Assignment Modal -->
 <div class="modal fade" id="addAssignmentModal" tabindex="-1">
@@ -115,5 +226,23 @@ $units = lecturerGetMyUnits($conn, $lecturer_id);
     </div>
   </div>
 </div>
+<script>
+// Fill edit modal
+document.getElementById('editAssignmentModal').addEventListener('show.bs.modal', function (event) {
+  const btn = event.relatedTarget;
+
+  document.getElementById('edit_assignment_id').value = btn.getAttribute('data-id');
+  document.getElementById('edit_unit_id').value       = btn.getAttribute('data-unit');
+  document.getElementById('edit_title').value         = btn.getAttribute('data-title');
+  document.getElementById('edit_description').value   = btn.getAttribute('data-desc');
+  document.getElementById('edit_due_date').value      = btn.getAttribute('data-due');
+});
+
+// Fill delete modal
+document.getElementById('deleteAssignmentModal').addEventListener('show.bs.modal', function (event) {
+  const btn = event.relatedTarget;
+  document.getElementById('delete_assignment_id').value = btn.getAttribute('data-id');
+});
+</script>
 
 </body>
